@@ -12,7 +12,7 @@ We recommend setting the following environment variables
     export EANA_K8S_CLUSTER=localtest
     export EXCLUDE_HOST_REGEX="/.dev.eanadev.org|^(portal-js|contribute|contentful-proxy|proxy|style|www|classic|blog)/"
 
-The EXCLUDE_HOST_REGEX filters out often-used services for which we don't want to capture logs.
+The EXCLUDE_HOST_REGEX filters out often-used services for which we don't want to capture ingress logs.
 
 To run open a terminal, go to this folder and run `fluentd -c local.conf -p ../fluentd/plugin_auth`.
 
