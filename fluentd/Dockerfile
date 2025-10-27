@@ -6,14 +6,18 @@ LABEL Author="Europeana Foundation <development@europeana.eu>"
 
 USER root
 
-RUN buildDeps="build-essential libgeoip-dev ruby-dev  libmaxminddb-dev wget libtool automake autoconf" \
+# Install geo-ip plugin (see also https://docs.fluentd.org/filter/geoip),
+# and multi-format-parser plugin (https://github.com/repeatedly/fluent-plugin-multi-format-parser)
+# and jwt plugin (https://github.com/jwt/ruby-jwt)
+RUN buildDeps="build-essential libgeoip-dev libtool automake autoconf wget" \
     && apt-get update \
     && apt-get install -y --no-install-recommends $buildDeps \
     && fluent-gem install fluent-plugin-geoip fluent-plugin-multi-format-parser jwt \
     && rm -rf /var/lib/apt/lists/* \
-    # removes GeoIP database so we re-download below
+    # Removes GeoIP database so we re-download below
     && gem sources --clear-all \
     && rm -rf /tmp/* /var/tmp/* /usr/lib/ruby/gems/*/cache/*.gem \
+    # Download latest version of GeoLite database
     && mkdir -p /usr/share/geoip \
     && wget -P /usr/share/geoip/ https://git.io/GeoLite2-City.mmdb
 
