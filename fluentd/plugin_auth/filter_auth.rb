@@ -1,6 +1,8 @@
-# This plugin uses https://github.com/jwt/ruby-jwt (MIT license) to parse a JWT from the provided field, extract claim 
-# data and insert this data in the record. If the provided field is empty or doesn't contain a valid JWT then no
-# data is inserted and a warning is logged. Basic tokens are silently ignored, but this can be disabled
+# This plugin uses https://github.com/jwt/ruby-jwt (MIT license) to parse data in an Authorization header. If the header
+# contains a JWT (Bearer token header) then we extract claim data and insert this in the record.
+# If the Authorization header contains APIKEY <key> values then this value is inserted in the client_key field.
+# If the provided header is empty or doesn't contain a valid JWT, then no data is inserted. Warnings are logged for
+# tokens that can't be parsed. By default Basic tokens are silently ignored, but warnings can be enabled for it.
 # 
 # @author Patrick Ehlert
 #
@@ -24,10 +26,11 @@ require 'jwt'
 
 module Fluent::Plugin
     class JwtFilter < Filter
-        Fluent::Plugin.register_filter('jwt', self)
+        Fluent::Plugin.register_filter('auth', self)
 
         BEARER_TOKEN_PREFIX = "Bearer "
         BASIC_TOKEN_PREFIX  = "Basic "
+        APIKEY_PREFIX       = "APIKEY "
 
         JWT_COMPONENTS = ["payload", "header"]
 
@@ -38,21 +41,21 @@ module Fluent::Plugin
         helpers :record_accessor, :inject
 
         # Plugin parameters
-        desc 'Specify the field name that contains the JWT to parse.'
-        config_param :token_key, :string, default: nil
-        desc 'Remove the "token_key" field from the record when parsing was successful (default = false)'
-        config_param :remove_token_key, :bool, default: false
+        desc 'Specify the field name that contains the credentials to parse (JWT or APIKEY). Generally this is the \'Authorization\' field.'
+        config_param :credentials_key, :string, default: nil
+        desc 'Remove the "credentials_key" field from the record when parsing was successful (default = false)'
+        config_param :remove_credentials_key, :bool, default: false
         desc 'Silently skip "Basic" base64 encoded tokens (default = true). If false it will generate an error for each basic token'
         config_param :skip_basic_token, :bool, default: true
 
         def configure(conf)
             super
 
-            if @token_key.nil?
-                raise Fluent::ConfigError, "Please set the token_key parameter."
+            if @credentials_key.nil?
+                raise Fluent::ConfigError, "Please set the credentials_key parameter."
             end
-            log.info("[jwt] - token key = " + @token_key)
-            @token_accessor = record_accessor_create('$.' + @token_key)
+            log.info("[auth] - credentials key = " + @credentials_key)
+            @token_accessor = record_accessor_create('$.' + @credentials_key)
 
             @fields_map = {}
             conf.elements.select { |element| element.name == 'record' }.each {
@@ -62,7 +65,7 @@ module Fluent::Plugin
                     # validate that each value starts with a valid JWT component and then a period
                     if (v.start_with?(*JWT_COMPONENTS.map { |c| c + "." })) then
                         @fields_map[k] = v
-                        log.info("[jwt] - field "+ k + ", value "+ v)
+                        log.trace("[auth - jwt] - field "+ k + ", value "+ v)
                     else
                         raise Fluent::ConfigError, "Unsupported JWT component: " + v 
                     end
@@ -82,30 +85,45 @@ module Fluent::Plugin
         def add_fields(record)
             # get token
             token = @token_accessor.call(record).to_s
-            log.trace("[jwt] - token = " + token.to_s)
+            log.trace("[auth] - token = " + token.to_s)
             return record if !token || token.empty? ||
                 (@skip_basic_token && token.start_with?(BASIC_TOKEN_PREFIX))
 
+            if (token.start_with?(APIKEY_PREFIX))
+                parse_apikey(record, token)
+            elsif (token.start_with?(BEARER_TOKEN_PREFIX))
+                parse_jwt(record, token)
+            else
+                log.warn("[auth] - Unknown token type: " + token.to_s)
+            end
+            record
+        end
+
+        def parse_apikey(record, token)
+            token = token.delete_prefix(APIKEY_PREFIX).strip
+            log.trace("[auth - apikey] - value = " + token.to_s)
+            record["client_key"] = token.to_s
+        end
+
+        def parse_jwt(record, token)
             begin
                 # "Bearer" is case-sensitive according to specs https://datatracker.ietf.org/doc/html/rfc6750#section-2.1
                 token = token.delete_prefix(BEARER_TOKEN_PREFIX)
                 decoded_token = JWT_COMPONENTS.zip(JWT.decode(token, nil, false)).to_h
-                log.trace("[jwt] - decoded token = " + decoded_token.to_s)
+                log.trace("[auth - jwt] - decoded token = " + decoded_token.to_s)
 
                 # insert requested data
                 @fields_map.each do |key_to_add, path|
                     p = path.split(".")
                     value_to_add = decoded_token[p[0]][p[1]].to_s
-                    log.trace("[jwt] - adding " + key_to_add + " with value " + value_to_add)
+                    log.trace("[auth - jwt] - adding " + key_to_add + " with value " + value_to_add)
                     record[key_to_add] = value_to_add
                 end
 
                 @token_accessor.delete(record) if @remove_token_key
             rescue JWT::DecodeError => e
-                log.error("[jwt] - error decoding token: " + token.to_s)
+                log.error("[auth - jwt] - error decoding token: " + token.to_s)
             end
-
-            record
         end
 
     end

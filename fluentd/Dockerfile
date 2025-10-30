@@ -1,5 +1,6 @@
 # Image pushed as europeana/fluentd
-FROM fluent/fluentd-kubernetes-daemonset:v1-debian-elasticsearch
+# For versions of the base image see https://hub.docker.com/r/fluent/fluentd-kubernetes-daemonset/
+FROM fluent/fluentd-kubernetes-daemonset:v1.19-debian-elasticsearch7-1
 
 LABEL Author="Europeana Foundation <development@europeana.eu>"
 
@@ -17,6 +18,6 @@ RUN buildDeps="build-essential libgeoip-dev ruby-dev  libmaxminddb-dev wget libt
     && wget -P /usr/share/geoip/ https://git.io/GeoLite2-City.mmdb
 
 # By default fluentd will read plugin files from /fluentd/plugins/ folder (see also Docker containers entrypoint.sh)
-COPY plugin_jwt/** /fluentd/plugins/
+COPY plugin_auth/** /fluentd/plugins/
 
 
