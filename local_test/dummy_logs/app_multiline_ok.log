@@ -100,7 +100,7 @@
 2024-02-21T11:47:40.309971252Z stdout F         at eu.europeana.thumbnail.web.ThumbnailControllerV2.generateTestError(ThumbnailControllerV2.java:147) ~[classes/:?]
 2024-02-21T11:47:40.309974799Z stdout F         at eu.europeana.thumbnail.web.ThumbnailControllerV2.tmp_test_error_caused_by(ThumbnailControllerV2.java:140) ~[classes/:?]
 2024-02-21T11:47:40.30997832Z stdout F  ... 72 more
-2024-02-21T11:47:52.043273897Z stdout F 11:47:52.042 INFO eu.europeana.thumbnail.web.ThumbnailControllerV2:152 [http-nio-8080-exec-5] - This is a multi-line
+2024-02-21T11:47:52.043273897Z stdout F 11:47:52.042 INFO eu.europeana.thumbnail.web.ThumbnailControllerV2:152 [http-nio-8080-exec-5] - This is a multi-line but empty lines such as the one below will be filtered out!
 2024-02-21T11:47:52.043311436Z stdout F
 2024-02-21T11:47:52.043314739Z stdout F log
 2024-02-21T11:47:52.043317403Z stdout F .
