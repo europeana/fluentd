@@ -1,6 +1,6 @@
 # This plugin uses https://github.com/jwt/ruby-jwt (MIT license) to parse data in an Authorization header. If the header
 # contains a JWT (Bearer token header) then we extract claim data and insert this in the record.
-# If the Authorization header contains APIKEY <key> values then this value is inserted in the client_key field.
+# If the Authorization header contains APIKEY <key> values then this 'key' value is inserted in the record.
 # If the provided header is empty or doesn't contain a valid JWT, then no data is inserted. Warnings are logged for
 # tokens that can't be parsed. By default Basic tokens are silently ignored, but warnings can be enabled for it.
 # 
@@ -89,10 +89,10 @@ module Fluent::Plugin
             return record if !token || token.empty? ||
                 (@skip_basic_token && token.start_with?(BASIC_TOKEN_PREFIX))
 
-            if (token.start_with?(APIKEY_PREFIX))
-                parse_apikey(record, token)
-            elsif (token.start_with?(BEARER_TOKEN_PREFIX))
+            if (token.start_with?(BEARER_TOKEN_PREFIX))
                 parse_jwt(record, token)
+            elsif (token.start_with?(APIKEY_PREFIX))
+                parse_apikey(record, token)
             else
                 log.warn("[auth] - Unknown token type: " + token.to_s)
             end
