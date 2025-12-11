@@ -28,9 +28,10 @@ module Fluent::Plugin
     class JwtFilter < Filter
         Fluent::Plugin.register_filter('auth', self)
 
-        BEARER_TOKEN_PREFIX = "Bearer "
-        BASIC_TOKEN_PREFIX  = "Basic "
-        APIKEY_PREFIX       = "APIKEY "
+        # We use lowercase because we first convert values to lowercase to do a case-insensitive check
+        BEARER_TOKEN_PREFIX = "bearer"
+        BASIC_TOKEN_PREFIX  = "basic"
+        APIKEY_PREFIX       = "apikey"
 
         JWT_COMPONENTS = ["payload", "header"]
 
@@ -85,30 +86,35 @@ module Fluent::Plugin
         def add_fields(record)
             # get token
             token = @token_accessor.call(record).to_s
-            log.trace("[auth] - token = " + token.to_s)
-            return record if !token || token.empty? ||
-                (@skip_basic_token && token.start_with?(BASIC_TOKEN_PREFIX))
+            log.trace("[auth] - token = " + token)
+            return record if !token || token.empty?
 
-            if (token.start_with?(BEARER_TOKEN_PREFIX))
-                parse_jwt(record, token)
-            elsif (token.start_with?(APIKEY_PREFIX))
-                parse_apikey(record, token)
-            else
-                log.warn("[auth] - Unknown token type: " + token.to_s)
+            # split into token type and data
+            token_split = token.split(" ", 2)
+            if (token_split.size() != 2)
+                log.warn("[auth] - Invalid token: " + token)
+                return record
             end
-            record
-        end
+            token_type = token_split[0].downcase    # convert to downcase for easy comparison
+            token_data = token_split[1]
+            log.trace("[auth] - token type = " + token_type)
 
-        def parse_apikey(record, token)
-            token = token.delete_prefix(APIKEY_PREFIX).strip
-            log.trace("[auth - apikey] - value = " + token.to_s)
-            record["client_key"] = token.to_s
+            if (token_type == BEARER_TOKEN_PREFIX)
+                parse_jwt(record, token_data)
+            elsif (token_type == APIKEY_PREFIX)
+                record["client_key"] = token_data.strip
+            elsif (token_type == BASIC_TOKEN_PREFIX)
+                if (!skip_basic_token)
+                    log.warn("[auth] - Basic tokens are not supported: " + token)
+                end
+            else
+                log.warn("[auth] - Unknown token type: " + token)
+            end
+            return record
         end
 
         def parse_jwt(record, token)
             begin
-                # "Bearer" is case-sensitive according to specs https://datatracker.ietf.org/doc/html/rfc6750#section-2.1
-                token = token.delete_prefix(BEARER_TOKEN_PREFIX)
                 decoded_token = JWT_COMPONENTS.zip(JWT.decode(token, nil, false)).to_h
                 log.trace("[auth - jwt] - decoded token = " + decoded_token.to_s)
 
