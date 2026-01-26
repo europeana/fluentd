@@ -1,3 +1,5 @@
 This is not a parsable application log
-08:57:47.670365819Z and neither is this
+08:57:47.670365819Z and neither is this, but this is a very long log, so the results of this line will be truncated 1234567890123456789012345678901234567890123456789012345678901234567890abcdefghijklmnopqrstuvwxyz
 08:57:47.670365819Z or this
+
+12345678

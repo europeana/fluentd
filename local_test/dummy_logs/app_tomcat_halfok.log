@@ -1,3 +1,3 @@
-2023-03-28T15:48:39.649739584Z stderr F 28-Mar-2023 15:48:39.648 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/usr/local/tomcat/webapps/ROOT] has finished in [43,180] ms
-2023-03-28T15:48:39.689500132Z stderr F 28-Mar-2023 15:48:39.689 INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["http-nio-8080"]
-2023-03-28T15:48:39.772061029Z stderr F 28-Mar-2023 15:48:39.771 INFO [main] org.apache.catalina.startup.Catalina.start Server startup in [43742] milliseconds
+2025-03-28T15:48:39.649739584Z stderr F 28-Mar-2025 15:48:39.648 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/usr/local/tomcat/webapps/ROOT] has finished in [43,180] ms
+2025-03-28T15:48:39.689500132Z stderr F 28-Mar-2025 15:48:39.689 INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["http-nio-8080"]
+2025-03-28T15:48:39.772061029Z stderr F 28-Mar-2025 15:48:39.771 INFO [main] org.apache.catalina.startup.Catalina.start Server startup in [43742] milliseconds
