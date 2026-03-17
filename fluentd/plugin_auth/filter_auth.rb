@@ -9,7 +9,7 @@
 # Example usage:
 #
 #     <filter *>
-#         @type jwt
+#         @type auth
 #         token_key authorization_header
 #         remove_token_key true
 #         skip_basic_token true
