@@ -45,7 +45,7 @@ spec:
             memory: 256Mi
           limits:
             cpu: 600m
-            memory: 900Mi
+            memory: 1000Mi
         volumeMounts:
         - name: fluentd-config
           mountPath: /fluentd/etc
