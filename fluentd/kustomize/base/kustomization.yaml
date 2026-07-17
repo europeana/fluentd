@@ -9,4 +9,5 @@ configMapGenerator:
       - conf/fluent.conf
       - conf/apps.conf
       - conf/ingress.conf
+      - conf/keycloak.conf
       - conf/output.conf
