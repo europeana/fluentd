@@ -13,14 +13,16 @@ The files below are required for deployment:
 ```
     fluentd:
       ├── base
-      │    ├── fluentd.properties.yaml#
+      │    ├── fluentd.properties.yaml#           
       │    ├── fluentd.properties.yaml.template
       │    ├── kustomization.yaml
       │    └── conf
-      │         ├── filters.conf
-      │         ├── fluent.conf
-      │         ├── outputs.conf
-      │         └── sources.conf
+      │         ├── apps.conf
+      │         ├── fluent.conf                
+      │         ├── ingress.conf
+      │         ├── keycloak.conf
+      │         └── output.conf
+      │           
       └── overlays
            ├── cloud
            │    ├── deamonset_volume_patch.yaml
@@ -31,6 +33,9 @@ The files below are required for deployment:
                 └── kustomization.yaml 
  ```
 _# indicates a file not in version control_
+
+_For the Keycloak app, access logs are separated and parsed using keycloak.conf due to a different log location, log structure, and internal routing of calls._
+
 
 ### File naming scheme
 File names have the following structure:
